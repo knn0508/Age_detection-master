@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Capture Mode - Age Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
     <style>
         * {
             margin: 0;
@@ -206,7 +207,7 @@
             </div>
 
             <div class="controls">
-                <button class="btn" onclick="captureFromWebcam()">📸 Capture from Webcam</button>
+                <button class="btn" onclick="captureFromWebcam()" data-action="capture" data-camera-required="true">📸 Capture from Webcam</button>
                 <button class="btn" onclick="clearResults()">🗑️ Clear Results</button>
                 <a href="/learned_faces" class="btn">🧠 View Learned Faces</a>
             </div>
@@ -385,5 +386,6 @@
             document.getElementById('imageInput').value = '';
         }
     </script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>

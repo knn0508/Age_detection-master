@@ -21,7 +21,8 @@ camera_lock = threading.Lock()
 learned_faces = {}  # Store learned faces: {person_id: {'embedding': array, 'age': int, 'name': str, 'count': int}}
 face_id_counter = 0
 SIMILARITY_THRESHOLD = 0.6  # Threshold for face recognition
-FACES_DB_FILE = 'learned_faces.pkl'
+# Use persistent disk path for Render deployment
+FACES_DB_FILE = '/opt/render/project/src/data/learned_faces.pkl' if os.environ.get('ENVIRONMENT') == 'production' else 'learned_faces.pkl'
 frame_skip_counter = 0  # For performance optimization
 
 
@@ -43,6 +44,8 @@ def initialize_model():
 def save_learned_faces():
     """Save learned faces to disk"""
     try:
+        # Ensure directory exists for persistent storage
+        os.makedirs(os.path.dirname(FACES_DB_FILE), exist_ok=True)
         with open(FACES_DB_FILE, 'wb') as f:
             pickle.dump(learned_faces, f)
         print(f"Saved {len(learned_faces)} learned faces to disk")
@@ -143,6 +146,11 @@ def get_camera():
     with camera_lock:
         if camera is None:
             try:
+                # Check if running on Render (no camera available)
+                if os.environ.get('ENVIRONMENT') == 'production':
+                    print("Camera not available in production environment (Render)")
+                    return None
+                
                 camera = cv2.VideoCapture(0)
                 if not camera.isOpened():
                     print("Trying alternative camera indices...")
@@ -349,9 +357,13 @@ def model_status():
 def capture_image():
     """Capture and process a single image"""
     try:
+        # Check if camera is available
+        if os.environ.get('ENVIRONMENT') == 'production':
+            return jsonify({'error': 'Camera not available in production environment. Please use image upload instead.'}), 400
+            
         camera = get_camera()
         if camera is None:
-            return jsonify({'error': 'Failed to access camera'}), 500
+            return jsonify({'error': 'Failed to access camera. Please use image upload instead.'}), 500
 
         ret, frame = camera.read()
 
@@ -465,6 +477,10 @@ def video_feed():
 def start_camera():
     """Initialize camera for streaming"""
     try:
+        # Check if camera is available
+        if os.environ.get('ENVIRONMENT') == 'production':
+            return jsonify({'error': 'Camera not available in production environment. Real-time video streaming is not supported on Render.'}), 400
+            
         camera = get_camera()
         if camera is None:
             return jsonify({'error': 'Failed to access camera. Please check camera permissions and connection.'}), 500

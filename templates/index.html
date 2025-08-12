@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Age Prediction App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
     <style>
         * {
             margin: 0;
@@ -278,5 +279,7 @@
             </p>
         </div>
     </div>
+    
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>

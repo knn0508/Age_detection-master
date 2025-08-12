@@ -1,0 +1,55 @@
+/* Additional styles for the Age Prediction App */
+
+.camera-warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.camera-warning strong {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.production-notice {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+}
+
+.production-notice h3 {
+    margin-bottom: 10px;
+    font-size: 1.2em;
+}
+
+.feature-disabled {
+    opacity: 0.6;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+.feature-disabled .mode-card {
+    background: rgba(200, 200, 200, 0.5);
+}
+
+.feature-disabled .mode-card:hover {
+    transform: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+@media (max-width: 768px) {
+    .camera-warning, .production-notice {
+        margin: 15px 0;
+        padding: 12px;
+        font-size: 13px;
+    }
+}

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real-time Mode - Age Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
     <style>
         * {
             margin: 0;
@@ -219,7 +220,7 @@
                 <div id="videoPlaceholder" class="placeholder">
                     🎯 Live video stream will appear here
                 </div>
-                <img id="videoFeed" src="" style="display: none;" alt="Live Video Feed">
+                <img id="videoFeed" src="/video_feed" style="display: none;" alt="Live Video Feed" data-camera-required="true">
             </div>
 
             <div class="info-panel">
@@ -438,5 +439,6 @@
             }
         }
     </script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>
