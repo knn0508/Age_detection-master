@@ -290,6 +290,11 @@ def capture_mode():
     return render_template('capture_mode.html')
 
 
+@app.route('/browser_camera')
+def browser_camera():
+    return render_template('browser_camera.html')
+
+
 @app.route('/realtime_mode')
 def realtime_mode():
     return render_template('realtime_mode.html')

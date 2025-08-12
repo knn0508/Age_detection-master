@@ -1,10 +1,16 @@
-# Age Detection Web Application
+# Age Detection Web Applica├── templates/
+    ├── index.html        # Main page
+    ├── capture_mode.html # Image upload mode
+    ├── browser_camera.html# Browser camera capture
+    ├── realtime_mode.html# Real-time video mode
+    └── learned_faces.html# Face management page
 
 A Flask-based web application that performs real-time age detection using InsightFace models. The app supports both real-time video streaming and static image analysis with face learning capabilities.
 
 ## Features
 
-- **Real-time Age Detection**: Live video stream processing (local environment only)
+- **Browser Camera**: Use your device's camera through web browser (works everywhere)
+- **Real-time Server Streaming**: Server-side video processing (local environment only)
 - **Image Upload**: Upload and analyze static images
 - **Face Learning**: Recognizes and remembers faces across sessions
 - **Persistent Storage**: Learned faces are saved to disk
@@ -115,15 +121,17 @@ python script2.py
 ## Features by Environment
 
 ### Local Development
-✅ Real-time video streaming
-✅ Webcam capture
+✅ Browser camera (device camera through web browser)
+✅ Real-time video streaming (server-side webcam)
+✅ Server webcam capture
 ✅ Image upload
 ✅ Face learning
 ✅ Persistent storage
 
 ### Production (Render)
-❌ Real-time video streaming (no camera access)
-❌ Webcam capture (no camera access)  
+✅ Browser camera (device camera through web browser) - **NEW!**
+❌ Real-time video streaming (no server camera access)
+❌ Server webcam capture (no server camera access)  
 ✅ Image upload
 ✅ Face learning
 ✅ Persistent storage (disk mount)
@@ -132,6 +140,7 @@ python script2.py
 
 - `GET /` - Main page
 - `GET /capture_mode` - Image upload mode
+- `GET /browser_camera` - Browser camera capture mode
 - `GET /realtime_mode` - Real-time video mode
 - `GET /learned_faces` - Face management page
 - `POST /upload_image` - Upload and analyze image

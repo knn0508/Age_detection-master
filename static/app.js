@@ -20,7 +20,7 @@ function showProductionNotice() {
         notice.className = 'production-notice';
         notice.innerHTML = `
             <h3>🚀 Production Environment</h3>
-            <p>Camera features are disabled in the cloud environment. Please use image upload functionality instead.</p>
+            <p>Server camera features are disabled in the cloud environment. Use <strong>Browser Camera</strong> to access your device's camera, or <strong>Image Upload</strong> for file processing.</p>
         `;
         
         // Insert notice at the top of main content
@@ -32,28 +32,28 @@ function showProductionNotice() {
 }
 
 function disableCameraFeatures() {
-    // Disable real-time mode
+    // Disable real-time mode (server-side camera streaming)
     const realtimeCard = document.querySelector('a[href="/realtime_mode"]');
     if (realtimeCard) {
         realtimeCard.parentElement.classList.add('feature-disabled');
         realtimeCard.onclick = function(e) {
             e.preventDefault();
-            alert('Real-time video streaming is not available in production environment. Please use image upload instead.');
+            alert('Real-time video streaming is not available in production environment. Please use Browser Camera or Image Upload instead.');
         };
     }
     
-    // Disable capture buttons
+    // Server-side capture buttons remain disabled
     const captureButtons = document.querySelectorAll('[data-action="capture"]');
     captureButtons.forEach(button => {
         button.disabled = true;
         button.textContent = 'Camera Not Available';
         button.onclick = function(e) {
             e.preventDefault();
-            alert('Camera access is not available in production environment.');
+            alert('Server camera access is not available in production. Please use Browser Camera instead.');
         };
     });
     
-    // Hide video feed
+    // Hide video feed for server-side streaming
     const videoElements = document.querySelectorAll('img[src="/video_feed"]');
     videoElements.forEach(video => {
         video.style.display = 'none';
@@ -61,7 +61,7 @@ function disableCameraFeatures() {
         if (parent) {
             const message = document.createElement('div');
             message.className = 'camera-warning';
-            message.innerHTML = '<strong>Camera Unavailable</strong>Real-time video streaming is not supported in production environment.';
+            message.innerHTML = '<strong>Server Camera Unavailable</strong>Real-time server video streaming is not supported in production. Use Browser Camera for device camera access.';
             parent.appendChild(message);
         }
     });

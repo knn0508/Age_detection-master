@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser Camera Capture - Age Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .camera-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        #videoElement {
+            width: 100%;
+            max-width: 640px;
+            height: 480px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            background: #000;
+        }
+
+        #captureCanvas {
+            display: none;
+        }
+
+        .camera-controls {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        #resultImage {
+            max-width: 100%;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .face-info {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .camera-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📸 Browser Camera Capture</h1>
+            <p>Use your device's camera to capture and analyze photos</p>
+        </div>
+
+        <div class="main-content">
+            <div class="back-btn">
+                <a href="/" class="btn">← Back to Home</a>
+            </div>
+
+            <div class="camera-info">
+                <strong>📱 How it works:</strong> This feature uses your device's camera (phone, laptop, tablet) through your web browser. 
+                Click "Start Camera" to begin, then "Capture Photo" to take a picture for age analysis.
+            </div>
+
+            <div class="camera-section">
+                <video id="videoElement" autoplay playsinline muted>
+                    Your browser doesn't support video streaming.
+                </video>
+                <canvas id="captureCanvas" width="640" height="480"></canvas>
+            </div>
+
+            <div class="camera-controls">
+                <button id="startCameraBtn" class="btn" onclick="startCamera()">📹 Start Camera</button>
+                <button id="captureBtn" class="btn" onclick="capturePhoto()" disabled>📸 Capture Photo</button>
+                <button id="stopCameraBtn" class="btn" onclick="stopCamera()" disabled>⏹️ Stop Camera</button>
+            </div>
+
+            <div id="message"></div>
+
+            <div class="results" id="results" style="display: none;">
+                <h3>Analysis Results:</h3>
+                <img id="resultImage" style="display: none;" alt="Captured Photo">
+                <div id="faceResults"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let videoElement = document.getElementById('videoElement');
+        let captureCanvas = document.getElementById('captureCanvas');
+        let captureContext = captureCanvas.getContext('2d');
+        let mediaStream = null;
+
+        async function startCamera() {
+            try {
+                // Request camera access
+                mediaStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        width: { ideal: 640 }, 
+                        height: { ideal: 480 },
+                        facingMode: 'user' // Front camera on mobile
+                    } 
+                });
+                
+                videoElement.srcObject = mediaStream;
+                
+                // Enable/disable buttons
+                document.getElementById('startCameraBtn').disabled = true;
+                document.getElementById('captureBtn').disabled = false;
+                document.getElementById('stopCameraBtn').disabled = false;
+                
+                showMessage('Camera started successfully! 📹', 'success');
+                
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                let errorMsg = 'Failed to access camera. ';
+                
+                if (error.name === 'NotAllowedError') {
+                    errorMsg += 'Please allow camera permissions and try again.';
+                } else if (error.name === 'NotFoundError') {
+                    errorMsg += 'No camera found on this device.';
+                } else {
+                    errorMsg += 'Please check your camera and try again.';
+                }
+                
+                showMessage(errorMsg, 'error');
+            }
+        }
+
+        function stopCamera() {
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+            }
+            
+            videoElement.srcObject = null;
+            
+            // Reset buttons
+            document.getElementById('startCameraBtn').disabled = false;
+            document.getElementById('captureBtn').disabled = true;
+            document.getElementById('stopCameraBtn').disabled = true;
+            
+            showMessage('Camera stopped.', 'success');
+        }
+
+        async function capturePhoto() {
+            try {
+                // Draw current video frame to canvas
+                captureContext.drawImage(videoElement, 0, 0, 640, 480);
+                
+                // Convert canvas to blob
+                captureCanvas.toBlob(async (blob) => {
+                    const formData = new FormData();
+                    formData.append('image', blob, 'capture.jpg');
+                    
+                    showMessage('Processing image... ⏳', 'info');
+                    
+                    try {
+                        const response = await fetch('/upload_image', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.error) {
+                            showMessage('Error: ' + result.error, 'error');
+                        } else {
+                            displayResults(result);
+                        }
+                        
+                    } catch (error) {
+                        console.error('Upload error:', error);
+                        showMessage('Error uploading image: ' + error.message, 'error');
+                    }
+                }, 'image/jpeg', 0.8);
+                
+            } catch (error) {
+                console.error('Capture error:', error);
+                showMessage('Error capturing photo: ' + error.message, 'error');
+            }
+        }
+
+        function displayResults(result) {
+            const resultsDiv = document.getElementById('results');
+            const resultImage = document.getElementById('resultImage');
+            const faceResults = document.getElementById('faceResults');
+            
+            // Show processed image
+            resultImage.src = 'data:image/jpeg;base64,' + result.image;
+            resultImage.style.display = 'block';
+            
+            // Show face analysis results
+            if (result.faces && result.faces.length > 0) {
+                let html = '<h4>Detected Faces:</h4>';
+                result.faces.forEach((face, index) => {
+                    html += `
+                        <div class="face-info">
+                            <strong>Face ${index + 1}:</strong> ${face.name}<br>
+                            <strong>Predicted Age:</strong> ${face.age} years<br>
+                            <strong>Status:</strong> ${face.status}<br>
+                            ${face.similarity > 0 ? `<strong>Recognition Confidence:</strong> ${(face.similarity * 100).toFixed(1)}%` : ''}
+                        </div>
+                    `;
+                });
+                faceResults.innerHTML = html;
+                showMessage(`Successfully analyzed ${result.faces.length} face(s)! 🎉`, 'success');
+            } else {
+                faceResults.innerHTML = '<div class="face-info">No faces detected in the image.</div>';
+                showMessage('No faces detected. Try adjusting lighting or camera angle.', 'info');
+            }
+            
+            resultsDiv.style.display = 'block';
+        }
+
+        function showMessage(text, type = 'info') {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = type === 'error' ? 'error-message' : 
+                                 type === 'success' ? 'success-message' : 'camera-info';
+            messageDiv.innerHTML = text;
+            messageDiv.style.display = 'block';
+            
+            // Auto-hide info messages after 5 seconds
+            if (type === 'info' || type === 'success') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+            }
+        });
+
+        // Check camera support
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            showMessage('Camera access not supported in this browser. Please use a modern browser like Chrome, Firefox, or Safari.', 'error');
+            document.getElementById('startCameraBtn').disabled = true;
+        }
+    </script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

@@ -110,6 +110,7 @@ def test_templates():
     template_files = [
         'templates/index.html',
         'templates/capture_mode.html', 
+        'templates/browser_camera.html',
         'templates/realtime_mode.html',
         'templates/learned_faces.html'
     ]
