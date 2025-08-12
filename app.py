@@ -30,13 +30,18 @@ def initialize_model():
     """Initialize the InsightFace model"""
     global model
     try:
+        print("Starting model initialization...")
         model = FaceAnalysis(name="buffalo_l")
+        print("FaceAnalysis created, preparing model...")
         model.prepare(ctx_id=-1)  # Use CPU for deployment compatibility
-        print("Model initialized successfully")
+        print("Model prepared successfully")
         load_learned_faces()
+        print("Model initialization completed successfully")
         return True
     except Exception as e:
         print(f"Error initializing model: {e}")
+        import traceback
+        traceback.print_exc()
         model = None
         return False
 
@@ -70,6 +75,19 @@ def load_learned_faces():
         print(f"Error loading learned faces: {e}")
         learned_faces = {}
         face_id_counter = 0
+
+
+# Initialize model after all functions are defined
+print("Initializing AI model...")
+try:
+    model_init_success = initialize_model()
+    if not model_init_success:
+        print("Warning: AI model initialization failed. Some features may not work.")
+    else:
+        print("AI model ready!")
+except Exception as e:
+    print(f"Critical error during model initialization: {e}")
+    model = None
 
 
 def find_matching_face(face_embedding):
@@ -356,6 +374,18 @@ def model_status():
         'model_initialized': model is not None,
         'learned_faces_count': len(learned_faces)
     })
+
+
+@app.route('/api/initialize_model', methods=['POST'])
+def initialize_model_api():
+    """Initialize the model on demand"""
+    try:
+        if initialize_model():
+            return jsonify({'status': 'success', 'message': 'Model initialized successfully'})
+        else:
+            return jsonify({'status': 'error', 'message': 'Failed to initialize model'}), 500
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
 @app.route('/capture_image', methods=['POST'])
